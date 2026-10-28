@@ -1,0 +1,1091 @@
+# MASTER PROMPT: COMPLETE EDUVERIFY-AI DEVELOPMENT
+
+Act as a senior full-stack engineer, software architect, database engineer, AI/ML engineer, cybersecurity engineer, QA engineer, and UI/UX specialist.
+
+Your task is to inspect, complete, debug, integrate, test, and finalize my existing project, **EduVerify-AI — AICTE Approval and Document Verification Platform**.
+
+Do not merely give me suggestions, example code, or a development plan. Your primary responsibility is to IMPLEMENT the missing functionality in the existing project, verify that it works, fix any issues you discover, and continue until all feasible development tasks are completed.
+
+Do not unnecessarily ask me to implement code manually. Use the tools available in your environment to inspect and modify project files, execute commands, run tests, and validate results.
+
+However, never claim that a feature works unless you have actually verified it.
+
+---
+
+# 1. MOST IMPORTANT REQUIREMENT: LOCAL-FIRST ARCHITECTURE
+
+My primary requirement is to run the complete application locally on my Windows laptop.
+
+The project must not depend on Google Cloud, Google Cloud SQL, Google Cloud Storage, Firebase, Cloud Run, AWS, Azure, or any other paid or remote cloud infrastructure to function locally.
+
+Do not introduce cloud dependencies.
+
+The application must work using the following local architecture:
+
+- Frontend: Existing React, TypeScript, and Vite application.
+- Backend: Existing Node.js and Express server.
+- Database: Local PostgreSQL.
+- ORM: Existing Prisma setup.
+- AI document processing: Existing Python FastAPI OCR service.
+- OCR engine: Tesseract installed locally.
+- File storage: Local filesystem.
+- Authentication: Secure local authentication appropriate for the existing architecture.
+- Document metadata: Stored in local PostgreSQL.
+- Audit logs: Stored persistently in local PostgreSQL.
+- Testing: Local automated tests and local integration tests.
+
+Preserve the existing application architecture wherever practical. Do not rewrite the entire application merely to make the code look different.
+
+### Local storage requirements
+
+Store uploaded documents in a dedicated directory outside the public frontend assets.
+
+For example:
+
+storage/
+  documents/
+  extracted-text/
+  temporary/
+  reports/
+
+Use configurable local storage paths through environment variables.
+
+Requirements:
+
+1. Uploaded documents must persist across server restarts.
+2. Store file metadata and document relationships in PostgreSQL.
+3. Store the actual file contents on the local filesystem.
+4. Generate safe, unique server-side filenames.
+5. Do not expose private document directories through static public URLs.
+6. Restrict file access through authenticated backend routes.
+7. Validate file size, extension, and actual file type.
+8. Prevent path traversal and unauthorized file access.
+9. Clean up temporary files safely.
+10. Ensure the storage directories are created automatically when appropriate.
+11. Never silently replace persistent storage with in-memory storage.
+12. Clearly explain that files stored on the laptop remain dependent on that laptop's disk and backups.
+
+Use local OCR at http://127.0.0.1:5005 unless inspection establishes that the existing service uses a different local endpoint.
+
+Do not deploy OCR to the cloud.
+
+---
+
+# 2. FIRST: INSPECT THE ENTIRE EXISTING PROJECT
+
+Before changing code, inspect the project structure and existing implementation.
+
+Inspect at least:
+
+- package.json
+- Prisma schema and migrations
+- Prisma seed script
+- server entry point
+- server configuration
+- all backend routes
+- database services
+- authentication middleware
+- authorization and tenant-isolation logic
+- document upload and download logic
+- local file storage implementation
+- OCR service and its API
+- document extraction and validation
+- application lifecycle and status transitions
+- scrutiny workflow
+- verification workflow
+- inspection workflow
+- clarification workflow
+- notification workflow
+- reports and dashboard metrics
+- audit logging
+- frontend pages, components, hooks, contexts, and API clients
+- TypeScript configuration
+- Vite configuration
+- environment variable handling
+- automated tests
+- README and setup documentation
+
+Inspect the entire project, not just the files that are easiest to access.
+
+Identify:
+
+- Missing features.
+- Buttons that do nothing.
+- Forms that do not submit correctly.
+- Hardcoded or mock data.
+- APIs that return placeholder responses.
+- Database operations that are not persistent.
+- Frontend-backend integration gaps.
+- Incorrect API endpoints.
+- Missing validation.
+- Security vulnerabilities.
+- Broken role-based access control.
+- Missing tenant isolation.
+- Incomplete OCR integration.
+- Incorrect document verification logic.
+- Missing loading, error, success, and empty states.
+- Inconsistent application status transitions.
+- Duplicate or unreliable database records.
+- Tests that do not reflect actual functionality.
+- Configuration that prevents the project from running locally.
+
+Create an internal implementation checklist and work through it systematically.
+
+Do not stop after producing the checklist.
+
+---
+
+# 3. PRESERVE MY EXISTING UI AND PROJECT DATA
+
+My existing application already contains a frontend, database schema, sample records, and several implemented features.
+
+Preserve the existing design, layout, colors, navigation, dashboard structure, and component organization wherever practical.
+
+Do not redesign the application unnecessarily.
+
+Do not replace the existing frontend with a generic template.
+
+Do not remove working features to make implementation easier.
+
+Do not reset, drop, recreate, or overwrite my PostgreSQL database.
+
+Do not automatically run destructive commands such as:
+
+- prisma migrate reset
+- DROP DATABASE
+- DROP TABLE
+- destructive database seeding
+- commands that erase existing documents or records
+
+Before any database schema changes:
+
+1. Inspect the current schema.
+2. Identify the exact changes required.
+3. Preserve existing records.
+4. Prefer safe, additive migrations.
+5. Explain any potentially destructive operation before proceeding.
+
+Do not change existing IDs or delete existing institutions, users, applications, documents, inspections, audit logs, or notifications merely to make tests pass.
+
+Keep test data isolated from real development data.
+
+---
+
+# 4. COMPLETE THE DATABASE INTEGRATION
+
+PostgreSQL must be the authoritative persistent data store.
+
+Review and complete all Prisma integrations.
+
+Verify that the following entities work correctly wherever they exist in the current schema:
+
+- Users
+- Institutions
+- Applications
+- Application checklist items
+- Application status history
+- Documents
+- Document extractions
+- Validation results
+- Duplicate matches
+- Verification tasks
+- Inspections
+- Inspection findings
+- Clarifications
+- Notifications
+- Audit logs
+- Rules
+- Reports and related records
+
+Do not invent new database models if existing models can support the required functionality.
+
+Implement missing models or schema changes only when necessary.
+
+Requirements:
+
+1. Every successful create, update, and delete operation must have clearly defined persistence behavior.
+2. Use Prisma transactions for operations involving multiple related records.
+3. Enforce foreign-key relationships and valid references.
+4. Handle database errors explicitly.
+5. Prevent duplicate records where appropriate.
+6. Implement pagination and filtering for large lists.
+7. Add appropriate database indexes when justified.
+8. Handle concurrent updates safely.
+9. Avoid N+1 database queries where practical.
+10. Use consistent error responses.
+11. Avoid silently swallowing database exceptions.
+12. Never return fabricated success data when a database operation fails.
+
+Remove production-path dependence on in-memory arrays.
+
+If the database is unavailable, display a clear error and prevent database-dependent operations from pretending to succeed.
+
+An optional mock mode may exist only if it is explicitly configured, clearly labelled, isolated from real data, and never silently activated.
+
+### Database verification
+
+Test that:
+
+- New records persist after restarting the backend.
+- Updates persist after restarting the backend.
+- Related records are created atomically.
+- Invalid foreign keys are rejected.
+- Database outages produce understandable errors.
+- Existing records remain intact.
+- Application list and detail pages read the same persistent data.
+
+---
+
+# 5. AUTHENTICATION AND ROLE-BASED AUTHORIZATION
+
+Complete secure authentication and authorization for the existing user roles.
+
+Inspect the current roles and preserve their intended permissions. These may include:
+
+- AICTE_ADMIN
+- COLLEGE_MANAGEMENT
+- SCRUTINY_OFFICER
+- VERIFICATION_OFFICER
+- INSPECTION_TEAM
+
+Do not assume these are the only roles; inspect the schema and existing application.
+
+Implement or complete:
+
+- Login and logout.
+- Secure password hashing if password-based authentication is used.
+- Secure session or token handling.
+- Session expiration and invalidation.
+- Authentication middleware.
+- Role-based permissions.
+- Server-side authorization for every protected operation.
+- Institution-level tenant isolation.
+- Correct handling of unauthorized and unauthenticated requests.
+- Appropriate protection against privilege escalation.
+- Secure handling of authentication secrets.
+
+Do not trust a user ID, role, or institution ID supplied directly by the browser as proof of identity.
+
+Do not rely on a freely editable x-user-id header for authentication.
+
+The backend must derive the authenticated identity from a verified session or token.
+
+Use secure cookies where appropriate for the existing architecture. If cookies are used, implement suitable CSRF protection and cookie settings.
+
+Do not introduce Firebase authentication or cloud identity dependencies.
+
+A user belonging to one institution must not access another institution's private applications or documents unless the user's verified role explicitly authorizes that access.
+
+An AICTE administrator must have only the intended administrative permissions.
+
+Enforce permissions on the backend, not just by hiding frontend buttons.
+
+Test each role against both permitted and forbidden actions.
+
+---
+
+# 6. COMPLETE THE INSTITUTION MANAGEMENT MODULE
+
+Implement and verify the institution management workflow.
+
+Required functionality:
+
+- View institutions.
+- Search institutions.
+- Filter institutions.
+- View institution details.
+- Create institutions where authorized.
+- Update institution information where authorized.
+- View institution-specific applications.
+- View relevant documents.
+- Display approval status and history.
+- Validate mandatory fields.
+- Prevent unauthorized cross-institution access.
+
+Ensure institution records and their related data are loaded from PostgreSQL.
+
+Do not show hardcoded sample data as if it were live database data.
+
+Use the existing UI design.
+
+---
+
+# 7. COMPLETE THE APPLICATION LIFECYCLE
+
+Implement a complete, persistent AICTE application workflow using the existing application categories and schema.
+
+Support the application types already present in the project, such as:
+
+- Extension of Approval.
+- New Applicant.
+- Other application types already defined in the schema.
+
+Complete the following operations wherever appropriate:
+
+1. Initialize a draft application.
+2. Select the correct institution.
+3. Select the academic year.
+4. Configure programmes and requested intake.
+5. Save the draft.
+6. Edit a draft.
+7. View application details.
+8. Upload supporting documents.
+9. Submit an application.
+10. Run required validation checks.
+11. Assign the application to the appropriate scrutiny workflow.
+12. Track progress.
+13. Request clarifications.
+14. Submit clarification responses.
+15. Record scrutiny decisions.
+16. Schedule and record inspections where applicable.
+17. Record verification outcomes.
+18. Approve or reject an application according to authorized rules.
+19. Maintain a complete status history.
+20. Display final status and decision details.
+
+Use valid status transitions.
+
+Do not allow arbitrary transitions simply because the frontend sends a status string.
+
+Validate every transition on the backend based on the current status, the requested transition, and the authenticated user's permissions.
+
+Use transactions for status changes and history/audit creation.
+
+Do not automatically approve applications merely because a document was uploaded or an API request succeeded.
+
+Ensure the application list, details page, timeline, and dashboard display consistent data.
+
+Fix the application creation form so it sends all required fields, including the correct institution ID.
+
+Check the difference between the authenticated user's institution and the institution selected in the form.
+
+Do not generate duplicate application identifiers. Use a reliable database-backed ID strategy or collision-resistant identifiers.
+
+---
+
+# 8. COMPLETE DOCUMENT UPLOAD AND MANAGEMENT
+
+Implement the entire document lifecycle.
+
+Required features:
+
+- Upload documents.
+- Associate documents with the correct institution and application.
+- Validate file type and size.
+- Store files locally.
+- Save metadata in PostgreSQL.
+- List documents.
+- View document metadata.
+- Download authorized documents.
+- Delete or archive documents according to permissions and retention rules.
+- Display upload progress where practical.
+- Display processing status.
+- Handle failed uploads.
+- Prevent duplicate submissions where appropriate.
+- Preserve document-to-application relationships.
+- Prevent cross-tenant document access.
+- Record important document actions in the audit log.
+
+Use server-generated storage filenames.
+
+Do not store absolute local paths in publicly visible API responses.
+
+Do not permit arbitrary filesystem paths in document requests.
+
+Use streaming for larger file downloads when appropriate.
+
+If the existing application includes evidence hashing, verify the actual stored file's SHA-256 hash and preserve the hash as evidence metadata.
+
+Do not claim that a hash proves the contents of a document are authentic. It proves integrity relative to the hashed bytes.
+
+---
+
+# 9. COMPLETE THE LOCAL OCR PIPELINE
+
+Use the existing Python FastAPI OCR service and local Tesseract installation.
+
+Inspect the actual OCR API contract before integrating with it.
+
+Implement the complete workflow:
+
+1. A user uploads a document.
+2. The backend validates the upload.
+3. The document is saved to local storage.
+4. Document metadata is saved in PostgreSQL.
+5. The backend invokes the local OCR service.
+6. OCR extracts text from supported documents.
+7. The extracted text is stored persistently.
+8. Relevant fields are extracted.
+9. The extracted information is validated.
+10. The user can review the extracted information.
+11. The result is associated with the correct document and application.
+12. The document's processing status is updated.
+13. Errors are recorded and displayed.
+
+Support PDF and image formats that the existing OCR service can actually process.
+
+For PDFs, determine whether the service supports both text extraction and scanned-page OCR. Implement only what the available dependencies support, and document any limitations.
+
+Add:
+
+- Request timeouts.
+- Health checks.
+- Error handling.
+- Appropriate retry behavior.
+- Temporary-file cleanup.
+- File-size limits.
+- Processing status tracking.
+- Protection against unsafe or malformed files.
+
+If OCR is unavailable, report the failure clearly.
+
+Do not fabricate extracted text, document fields, verification evidence, or successful OCR results.
+
+OCR extraction is not proof that a document is genuine.
+
+---
+
+# 10. COMPLETE DOCUMENT VALIDATION AND VERIFICATION
+
+Implement meaningful verification workflows using the existing validation rules, database schema, and available integrations.
+
+Where relevant, validate:
+
+- Required fields.
+- Document presence.
+- Institution identity consistency.
+- Application identity consistency.
+- Academic-year consistency.
+- Registration or approval numbers.
+- Intake values.
+- Programme details.
+- Expiry dates.
+- Document format.
+- Duplicate document submissions.
+- Cross-document inconsistencies.
+- Missing or contradictory information.
+
+Separate these concepts:
+
+A. OCR extraction  
+B. Rule-based validation  
+C. Duplicate detection  
+D. External verification  
+E. Human review  
+F. Final approval decision
+
+Do not treat them as interchangeable.
+
+Use clear statuses, such as:
+
+- PENDING
+- PROCESSING
+- VERIFIED
+- FAILED
+- NEEDS_REVIEW
+
+Adapt the final enum values to the actual schema.
+
+Every status must reflect a real operation or a clearly defined human decision.
+
+External verification must use a real configured integration or explicitly return NOT_CONFIGURED / UNAVAILABLE.
+
+Never mark a document VERIFIED merely because an external API was not configured or a request failed.
+
+Never fabricate responses from government portals, registration databases, or third-party services.
+
+If external verification is unavailable, provide a review workflow and clearly label the result as unverified or requiring manual verification.
+
+Where appropriate, store:
+
+- Verification source.
+- Request timestamp.
+- Response timestamp.
+- Verification result.
+- Evidence or reference number.
+- Error details.
+- Reviewing officer.
+- Decision history.
+
+Avoid storing unnecessary sensitive data in logs.
+
+---
+
+# 11. COMPLETE THE SCRUTINY WORKFLOW
+
+Implement and test the scrutiny module.
+
+Required functionality:
+
+- List applications assigned to the officer.
+- View application details.
+- Review submitted documents.
+- Review OCR-extracted information.
+- View validation results.
+- Mark checklist items as complete or incomplete.
+- Add remarks.
+- Identify missing documents.
+- Request clarifications.
+- Save review progress.
+- Submit scrutiny recommendations.
+- Record the reviewing officer.
+- Record timestamps.
+- Maintain status history.
+- Prevent unauthorized decisions.
+
+Ensure checklist updates and scrutiny decisions persist in PostgreSQL.
+
+A scrutiny officer must not be able to approve or edit applications outside the officer's assigned permissions.
+
+---
+
+# 12. COMPLETE THE CLARIFICATION WORKFLOW
+
+Implement:
+
+- Create clarification requests.
+- Associate each request with the correct application and document when applicable.
+- Record the requesting officer.
+- Record the request date.
+- Specify the missing or incorrect information.
+- Notify the appropriate institution user.
+- Allow authorized users to respond.
+- Allow supporting documents to be attached.
+- Record response timestamps.
+- Track pending, answered, and resolved states.
+- Allow authorized officers to review responses.
+- Preserve clarification history.
+
+Ensure the application cannot bypass mandatory clarification requirements.
+
+Prevent unauthorized users from viewing or responding to another institution's clarification.
+
+---
+
+# 13. COMPLETE THE INSPECTION MODULE
+
+Implement the inspection lifecycle using existing schema models.
+
+Features should include:
+
+- Inspection scheduling.
+- Inspector assignment.
+- Inspection details.
+- Checklist management.
+- Findings.
+- Evidence attachments.
+- Inspector remarks.
+- Finding severity or category where supported.
+- Inspection status.
+- Submission of inspection reports.
+- Review of findings.
+- Audit history.
+
+Ensure only authorized personnel can create, modify, or finalize inspections.
+
+Persist all inspection information in PostgreSQL.
+
+Do not invent a completed inspection or positive finding.
+
+---
+
+# 14. COMPLETE NOTIFICATIONS
+
+Implement persistent notifications.
+
+Support relevant events such as:
+
+- Application submitted.
+- Application assigned.
+- Document processing completed.
+- Validation failure.
+- Clarification requested.
+- Clarification answered.
+- Inspection scheduled.
+- Scrutiny completed.
+- Application approved or rejected.
+
+Requirements:
+
+- Store notifications in PostgreSQL.
+- Associate them with the correct user.
+- Display unread counts.
+- Mark notifications as read.
+- Provide an appropriate notifications page or panel.
+- Prevent users from accessing other users' private notifications.
+- Avoid generating duplicate notifications unnecessarily.
+
+Do not claim that email or SMS notifications were sent unless a real local or configured delivery mechanism was executed.
+
+For local development, in-app notifications are sufficient unless the existing project requires more.
+
+---
+
+# 15. COMPLETE AUDIT LOGGING
+
+Use persistent PostgreSQL audit logs for important actions.
+
+Record relevant events such as:
+
+- Authentication events where appropriate.
+- Application creation.
+- Application updates.
+- Document upload and deletion.
+- Verification results.
+- Scrutiny decisions.
+- Clarification events.
+- Inspection events.
+- Approval or rejection.
+- Permission-sensitive operations.
+
+Each audit record should include the appropriate available fields, such as:
+
+- Actor ID.
+- Actor role.
+- Action.
+- Entity type.
+- Entity ID.
+- Institution context.
+- Timestamp.
+- Outcome.
+- Relevant non-sensitive details.
+
+Use the authenticated identity, not user-supplied actor details.
+
+Do not silently ignore audit persistence failures for critical operations.
+
+For important state-changing actions, write the business change and corresponding audit record within the same transaction whenever practical.
+
+Prevent ordinary application operations from modifying or deleting existing audit records.
+
+Do not log passwords, session tokens, secrets, or unnecessary sensitive document contents.
+
+---
+
+# 16. COMPLETE DASHBOARDS, REPORTS, AND ANALYTICS
+
+Connect dashboard metrics to actual PostgreSQL data.
+
+Where supported by the existing schema, implement metrics such as:
+
+- Total institutions.
+- Total applications.
+- Draft applications.
+- Submitted applications.
+- Applications under scrutiny.
+- Pending clarifications.
+- Pending verification tasks.
+- Scheduled inspections.
+- Approved applications.
+- Rejected applications.
+- Documents awaiting processing.
+- Failed validations.
+- Recent activities.
+
+Requirements:
+
+1. Metrics must come from real database queries.
+2. Apply role-based access and tenant filtering.
+3. Avoid exposing private information across institutions.
+4. Display useful empty states.
+5. Handle loading and errors.
+6. Avoid hardcoded dashboard counts.
+7. Ensure metrics match the application records displayed elsewhere.
+
+Complete existing report functionality.
+
+If report export is already present or required by the UI, implement the appropriate format using available local dependencies.
+
+Clearly label mock/demo analytics if any are intentionally retained for demonstration.
+
+---
+
+# 17. COMPLETE FRONTEND-BACKEND INTEGRATION
+
+Review every frontend page and connect it to the appropriate backend endpoint.
+
+Search for:
+
+- TODO comments.
+- Placeholder functions.
+- Mock API responses.
+- Hardcoded arrays.
+- Buttons without handlers.
+- Forms without submit behavior.
+- Missing API calls.
+- Incorrect endpoint paths.
+- Missing loading states.
+- Missing error states.
+- Missing success messages.
+- Stale UI state after updates.
+- Inconsistent TypeScript types.
+
+Ensure:
+
+- Forms submit real data.
+- Inputs are validated.
+- API responses are handled correctly.
+- Buttons perform their intended actions.
+- Lists update after successful operations.
+- Error messages are understandable.
+- Loading indicators are shown when needed.
+- Empty states are helpful.
+- Unauthorized actions are handled gracefully.
+- The UI does not display fake success messages.
+- The existing design remains consistent.
+
+Do not replace working UI with a new design system unless essential.
+
+Check navigation for every existing route and verify that all relevant pages can be opened without runtime errors.
+
+---
+
+# 18. INPUT VALIDATION AND ERROR HANDLING
+
+Validate data at the backend even when the frontend also validates it.
+
+Use the validation libraries already present in the project where possible.
+
+Validate:
+
+- Request body structure.
+- Required fields.
+- IDs and foreign keys.
+- File uploads.
+- Query parameters.
+- Pagination.
+- Enum values.
+- Dates.
+- Numeric values.
+- Intake capacity.
+- Status transitions.
+- User permissions.
+
+Use appropriate HTTP status codes.
+
+Return consistent, understandable error responses without exposing database internals, file paths, credentials, stack traces, or secrets.
+
+Add centralized error handling where appropriate.
+
+Avoid catch blocks that silently return empty arrays, stale memory data, or fabricated success objects.
+
+---
+
+# 19. SECURITY HARDENING
+
+Perform a practical security review of the existing code.
+
+Address relevant vulnerabilities, including:
+
+- Authentication bypass.
+- Authorization bypass.
+- Cross-tenant data leakage.
+- Insecure document downloads.
+- Arbitrary file access.
+- Path traversal.
+- Unsafe file uploads.
+- SQL injection risks.
+- Cross-site scripting risks.
+- CSRF risks where applicable.
+- Insecure session handling.
+- Excessive request payloads.
+- Missing rate limits on sensitive endpoints.
+- Secrets committed to source control.
+- Sensitive information in logs.
+- Insecure CORS configuration.
+- Overly broad permissions.
+- Insecure password storage.
+- Dependency vulnerabilities where feasible.
+
+Use secure defaults without breaking local development.
+
+Do not introduce cloud security services.
+
+Create or update `.env.example` with placeholder values only.
+
+Never print or commit actual secrets.
+
+Do not ask me to share passwords or secret keys.
+
+---
+
+# 20. TESTING REQUIREMENTS
+
+Do not rely solely on a claimed test count or an earlier AI-generated audit report.
+
+Run the actual tests in the current working project.
+
+First inspect the existing test framework and scripts.
+
+Then perform:
+
+### A. Static checks
+- TypeScript checks.
+- Lint checks where configured.
+- Build checks.
+
+### B. Backend tests
+- Authentication.
+- Authorization.
+- Tenant isolation.
+- Application creation.
+- Application updates.
+- Status transitions.
+- Document metadata.
+- Upload validation.
+- Verification behavior.
+- Clarification workflow.
+- Inspection workflow.
+- Notifications.
+- Audit logs.
+- Error handling.
+
+### C. Database integration tests
+- PostgreSQL connectivity.
+- CRUD persistence.
+- Foreign-key validation.
+- Transaction rollback.
+- Persistence across backend restarts.
+- Tenant isolation.
+- Duplicate handling.
+
+### D. OCR tests
+- OCR service health.
+- Supported document types.
+- Successful extraction.
+- Invalid file handling.
+- OCR service unavailable.
+- Processing failure handling.
+
+### E. Frontend tests
+- Login.
+- Role-specific navigation.
+- Application creation.
+- Document upload.
+- Application detail view.
+- Scrutiny operations.
+- Clarifications.
+- Inspection operations.
+- Notifications.
+- Dashboard metrics.
+- Loading, empty, and error states.
+
+### F. End-to-end checks
+Where supported, launch the application and exercise important user journeys through the UI.
+
+Do not claim browser-based verification unless a browser test actually ran.
+
+Do not claim all tests passed if any relevant test was skipped or blocked.
+
+Fix the underlying causes of failures rather than simply disabling tests.
+
+Keep test records isolated from the user's existing database.
+
+---
+
+# 21. LOCAL WINDOWS DEVELOPER EXPERIENCE
+
+Ensure the project can be run locally on Windows PowerShell.
+
+Document the actual commands based on the existing package scripts and Python service configuration.
+
+Provide a straightforward startup sequence covering:
+
+1. Confirm local PostgreSQL is running.
+2. Confirm the database and environment variables are configured.
+3. Install Node dependencies if needed.
+4. Generate the Prisma client if needed.
+5. Apply safe, required migrations if any.
+6. Start the Python OCR service.
+7. Start the Node/Express application.
+8. Open the application in the browser.
+9. Stop the services safely.
+
+Inspect the actual Python service directory, dependencies, entry point, and port before writing commands.
+
+Do not assume a Python filename without checking the project.
+
+Do not install duplicate PostgreSQL instances or start unnecessary services.
+
+Do not run multiple copies of the backend on the same port.
+
+Handle port conflicts gracefully and document how to identify the process already using a port.
+
+Keep the configuration local-first.
+
+Provide a `.env.example` that documents required variables without containing real credentials.
+
+Do not replace the user's current `.env` file without permission.
+
+Do not require internet access at runtime for core application features, except for explicitly configured external verification integrations.
+
+---
+
+# 22. PROJECT DOCUMENTATION
+
+Create or update the README with:
+
+- Project overview.
+- Architecture.
+- Technology stack.
+- Prerequisites.
+- Local PostgreSQL setup.
+- Environment variable configuration.
+- Prisma setup.
+- Local file storage configuration.
+- OCR setup.
+- Startup commands.
+- Testing commands.
+- Troubleshooting.
+- Main user roles.
+- Application workflow.
+- Document processing workflow.
+- Security notes.
+- Known limitations.
+
+Document which features are fully implemented, partially implemented, unavailable, or dependent on external integrations.
+
+Do not describe unimplemented features as complete.
+
+---
+
+# 23. IMPLEMENTATION STRATEGY
+
+Follow this process without stopping after the first phase.
+
+## Phase 1: Audit
+Inspect the project and create an internal checklist of missing features, errors, security risks, and integration gaps.
+
+## Phase 2: Local configuration
+Ensure the application can use local PostgreSQL, local filesystem storage, and local OCR without cloud dependencies.
+
+## Phase 3: Database
+Complete persistence, transactions, schema consistency, and error handling.
+
+## Phase 4: Security
+Complete authentication, role permissions, and institution-level isolation.
+
+## Phase 5: Core workflows
+Complete institutions, applications, documents, OCR, validation, verification, scrutiny, clarifications, and inspections.
+
+## Phase 6: Supporting workflows
+Complete notifications, audit logs, reports, and dashboards.
+
+## Phase 7: Frontend integration
+Connect all existing screens and actions to real backend functionality.
+
+## Phase 8: Testing
+Run static checks, unit tests, integration tests, and feasible end-to-end tests.
+
+## Phase 9: Fixing
+Fix discovered failures and repeat the relevant tests.
+
+## Phase 10: Final verification
+Verify the complete local startup sequence and critical user journeys.
+
+Continue working through all phases. Do not stop after giving me a plan.
+
+If one task is blocked, complete other independent tasks and clearly report the blocker.
+
+If an operation requires credentials or access that is not available, implement a safe, clearly labelled unavailable state instead of fabricating success.
+
+---
+
+# 24. STRICT RULES
+
+1. Modify the existing project rather than generating an unrelated replacement.
+2. Do not stop at suggestions or pseudocode.
+3. Do not generate a second application alongside the existing one.
+4. Do not introduce cloud storage or cloud database dependencies.
+5. Do not require paid external services for local development.
+6. Do not silently fall back to in-memory persistence.
+7. Do not fabricate OCR results or verification evidence.
+8. Do not bypass authorization to make tests pass.
+9. Do not weaken tests simply to obtain a green result.
+10. Do not erase existing database records.
+11. Do not remove working features.
+12. Do not redesign the existing UI unnecessarily.
+13. Do not claim that a command or test succeeded unless it actually ran.
+14. Do not leave partially implemented buttons or forms without documenting them.
+15. Do not expose secrets in logs or documentation.
+16. Do not create unnecessary files or duplicate implementations.
+17. Prefer maintainable, modular, type-safe code.
+18. Keep the application compatible with the existing Windows development environment.
+19. Avoid unnecessary dependency changes.
+20. Do not stop after the first successful build.
+
+Before making a risky change, explain its impact and use a reversible approach.
+
+If a required action is destructive or requires my explicit permission, pause that action but continue with safe independent tasks.
+
+---
+
+# 25. FINAL ACCEPTANCE CRITERIA
+
+Consider the project complete only when the following have been checked:
+
+- [ ] The existing application starts locally.
+- [ ] Local PostgreSQL connectivity is verified.
+- [ ] Existing database records remain intact.
+- [ ] The frontend uses the actual backend.
+- [ ] Backend CRUD operations persist in PostgreSQL.
+- [ ] No silent in-memory fallback hides database failures.
+- [ ] Authentication is validated by the backend.
+- [ ] Role-based permissions are enforced server-side.
+- [ ] Institution-level tenant isolation is tested.
+- [ ] Applications can be created and viewed.
+- [ ] Application status transitions are validated.
+- [ ] Documents can be uploaded to local storage.
+- [ ] Authorized users can retrieve their documents.
+- [ ] OCR works through the local Python service when available.
+- [ ] OCR failures are handled honestly.
+- [ ] Document validation and verification statuses reflect actual results.
+- [ ] Scrutiny and clarification workflows persist.
+- [ ] Inspection workflows persist.
+- [ ] Notifications persist and respect user permissions.
+- [ ] Audit logs persist.
+- [ ] Dashboard metrics reflect database data.
+- [ ] Existing navigation and major UI actions work.
+- [ ] TypeScript checks pass or remaining issues are documented.
+- [ ] Production build succeeds or blockers are documented.
+- [ ] Relevant tests pass or failures are explicitly documented.
+- [ ] The README explains local setup.
+- [ ] No cloud service is required for normal local operation.
+- [ ] Remaining limitations are clearly listed.
+
+---
+
+# 26. REQUIRED FINAL REPORT
+
+After implementation, provide a concise but detailed report containing:
+
+1. Features implemented.
+2. Files created.
+3. Files modified.
+4. Database schema or migration changes.
+5. Security improvements.
+6. Local storage implementation.
+7. OCR integration status.
+8. Tests actually executed and their results.
+9. Build and type-check results.
+10. Features that still require external credentials or services.
+11. Any remaining bugs or limitations.
+12. Exact PowerShell commands to run the project locally.
+13. The local URL to open the application.
+14. Any action that I must perform manually.
+
+Separate verified results from assumptions.
+
+Do not report success based solely on generated code or static inspection.
+
+## START NOW
+
+Inspect the entire existing EduVerify-AI project.
+
+Begin implementing the missing functionality in the existing codebase.
+
+Preserve my current UI, local PostgreSQL data, and Windows setup.
+
+Keep everything local-first. No Google Cloud Storage, no Cloud SQL requirement, no Firebase requirement, no Cloud Run deployment, and no mandatory cloud service.
+
+Implement, test, fix, and verify as much as possible before presenting the final report.

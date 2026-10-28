@@ -1,0 +1,6 @@
+{
+  "name": "EduVerify-AI — AICTE Approval & Document Validation",
+  "description": "Institutional regulatory approval, document validation, scrutiny, inspection, and verification platform for AICTE accreditation and institutional compliance.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

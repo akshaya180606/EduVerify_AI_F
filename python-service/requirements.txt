@@ -1,0 +1,11 @@
+# EduVerify-AI Real Document OCR & Intelligence Dependencies
+# Compatible with CPU environments (Linux/Windows/macOS, Python 3.10+)
+# System requirement: Tesseract OCR binary (e.g. `apt-get install tesseract-ocr` or Windows installer)
+
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+pymupdf>=1.24.0
+pytesseract>=0.3.10
+pillow>=10.2.0
+pydantic>=2.6.0
+python-multipart>=0.0.9

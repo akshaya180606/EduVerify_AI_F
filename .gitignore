@@ -1,0 +1,123 @@
+# =========================================================
+# EduVerify-AI - Git Ignore Configuration
+# =========================================================
+
+# -------------------------
+# Node.js dependencies
+# -------------------------
+node_modules/
+**/node_modules/
+
+# -------------------------
+# Python virtual environments
+# -------------------------
+.venv/
+**/.venv/
+venv/
+**/venv/
+env/
+**/env/
+
+# -------------------------
+# Build outputs
+# -------------------------
+build/
+**/build/
+dist/
+**/dist/
+coverage/
+*.tsbuildinfo
+
+# -------------------------
+# Environment variables and secrets
+# -------------------------
+.env
+.env.*
+!.env.example
+
+# Firebase local configuration
+/firebase-applet-config.json
+
+# Private keys and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+
+# -------------------------
+# Logs and temporary files
+# -------------------------
+*.log
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# -------------------------
+# Python cache
+# -------------------------
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+**/.pytest_cache/
+.mypy_cache/
+**/.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# -------------------------
+# Local databases and backups
+# -------------------------
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+*.bak
+
+# -------------------------
+# Local uploads and generated documents
+# -------------------------
+storage/documents/
+storage/temporary/
+storage/extracted-text/
+storage/reports/
+
+# -------------------------
+# ML model weights and caches
+# -------------------------
+*.safetensors
+*.pt
+*.pth
+*.onnx
+.cache/
+**/.cache/
+models/
+model_cache/
+
+# Hugging Face cache
+huggingface_cache/
+
+# -------------------------
+# Local development tools
+# -------------------------
+.vscode/
+.idea/
+.aistudio/
+
+# -------------------------
+# Nested duplicate project
+# Review before integrating
+# -------------------------
+/EduVerify_AI-main/
+
+# -------------------------
+# Operating system temporary files
+# -------------------------
+*.swp
+*.swo
+*~
+# Accidental PowerShell command file
+/s -ExecutionPolicy RemoteSigned) ; (& eEduVerify_AI-mainpython-service.venvScriptsActivate.ps1)

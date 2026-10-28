@@ -1,0 +1,1163 @@
+# MASTER PROJECT SPECIFICATION: EduVerify-AI
+
+## 1. ROLE AND PRIMARY OBJECTIVE
+
+Act as a senior full-stack architect, security engineer, UI/UX designer, database engineer, QA engineer, and AI document-processing engineer.
+
+Build a complete, modular, secure, maintainable full-stack web application named:
+
+**EduVerify-AI — AICTE Intelligent Approval and Document Validation Platform**
+
+This is an institutional regulatory workflow platform intended to help authorized administrators, colleges, scrutiny officers, verification officers, and inspection officers manage institution applications, supporting documents, evidence, validation results, inspections, and approval decisions.
+
+Generate the actual application source code and working features. Do not deliver only a UI prototype, a landing page, static dashboard cards, or a design plan.
+
+Read this entire specification before generating the project. Create a coherent architecture and implement the complete scope. Do not silently omit requirements. Do not repeatedly redesign or replace working modules when adding other modules.
+
+If a feature depends on external credentials, a real AICTE integration, a database service, or an unavailable government verification API, implement the integration interface, configuration, validation, clear error handling, and setup instructions. Do not pretend an external verification or database operation succeeded when it did not.
+
+## 2. TECHNOLOGY STACK AND ARCHITECTURE
+
+Use the following stack consistently.
+
+### Frontend
+- React with TypeScript.
+- Vite.
+- Tailwind CSS.
+- Reusable, accessible UI components.
+- shadcn/ui or equivalent accessible component patterns.
+- React Router.
+- TanStack Query for server state where appropriate.
+- React Hook Form and Zod for form validation.
+- Recharts for dashboard visualizations.
+- Lucide icons.
+- A suitable graph visualization library for institution relationships if needed.
+- Responsive desktop, tablet, and mobile layouts.
+
+### Main backend
+- Node.js server runtime compatible with Google AI Studio Build mode.
+- TypeScript.
+- REST API with consistent request and response schemas.
+- Zod or equivalent runtime validation.
+- A clear service, controller, repository, and middleware separation.
+- Centralized error handling.
+- Request logging with sensitive values redacted.
+- API versioning under `/api/v1`.
+
+### Database
+- PostgreSQL as the preferred relational database.
+- Prisma ORM or another mature TypeScript-compatible ORM.
+- Versioned database migrations and seed scripts.
+- Foreign keys, indexes, uniqueness constraints, timestamps, and appropriate transaction handling.
+- A documented `DATABASE_URL` configuration.
+- Never use in-memory arrays or browser local storage as the permanent production database.
+- If PostgreSQL cannot be provisioned inside the builder, create the actual PostgreSQL integration and schema, document the connection requirements, and clearly identify any feature that cannot be verified until a database is connected.
+
+Use Firebase Authentication or another established authentication provider only if it fits the architecture and is configured securely. Do not create a fake login that grants privileged access based on a user-selected role.
+
+### AI and document processing
+- Keep document processing behind a dedicated service interface.
+- Use the Node.js backend for orchestration.
+- Provide an optional separate Python FastAPI service for OCR, PDF processing, image processing, and advanced machine-learning tasks.
+- The Python service must have a documented API contract, environment configuration, error handling, and independent health endpoint.
+- Do not require the Python service merely to display the core application.
+- Use PyMuPDF, OCR tooling such as PaddleOCR or Tesseract, and OpenCV where appropriate in the optional Python service.
+- Use Gemini only through secure server-side calls when AI extraction or summarization is required.
+- Never expose API keys in frontend code.
+- Do not send sensitive documents to external AI services without explicit configuration, appropriate authorization, and a documented privacy decision.
+
+### File storage
+- Define a storage adapter that can support private object storage such as Amazon S3 or Google Cloud Storage.
+- Use private storage, not public document URLs.
+- Support signed, short-lived download links or authorized server-side file streaming.
+- Keep uploaded files separate from publicly served application assets.
+- Include a local development storage adapter if useful.
+- Document storage configuration and limitations.
+
+### Testing and deployment
+- Vitest and React Testing Library for frontend tests.
+- Node.js backend tests using a suitable testing framework.
+- API and authorization integration tests.
+- Python pytest tests for the optional Python service.
+- Dockerfiles and Docker Compose where compatible.
+- `.env.example` files without real secrets.
+- Database migration and seed commands.
+- README with complete installation, development, testing, configuration, and deployment instructions.
+- Git-friendly project structure.
+
+Do not create a FastAPI backend as the primary server while simultaneously assuming the application is running on the Node.js backend. Node.js is the primary backend; Python is a separate optional service.
+
+## 3. DESIGN SYSTEM
+
+Create a professional, minimal, modern regulatory administration interface. It should look like a carefully designed institutional enterprise platform, not a generic AI-generated template.
+
+### Exact colors
+- Primary deep teal: `#115E59`
+- Accent emerald/teal: `#0D9488`
+- Main background: `#F3F8F7`
+- Card and panel background: `#FFFFFF`
+- Primary text: `#193A39`
+- Secondary text: `#647A78`
+- Border: `#D9E7E4`
+- Success: `#15803D`
+- Warning: `#B45309`
+- Error: `#B91C1C`
+- Neutral or unavailable: `#6B7280`
+
+### UI requirements
+- Consistent spacing, typography, button sizes, form controls, and border radii.
+- Left sidebar with role-specific navigation.
+- Top navigation with breadcrumbs, global search, notifications, and account menu.
+- Clear page titles, contextual descriptions, and primary actions.
+- Cards, tables, filters, sorting, pagination, empty states, skeleton loaders, and error states.
+- Useful tooltips and confirmation dialogs for destructive or sensitive actions.
+- Accessible labels, keyboard navigation, focus indicators, and readable contrast.
+- Mobile-friendly navigation and responsive tables.
+- Consistent status chips.
+- Do not communicate status using color alone.
+- No unnecessary gradients, excessive animations, huge empty spaces, or decorative AI imagery.
+- Use realistic but clearly identified demo records only in demo mode.
+- Do not display fake statistics as real institutional data.
+
+### Status semantics
+- Valid: success green.
+- Invalid: error red.
+- Expired: warning.
+- Pending: neutral or informational.
+- Needs review: warning.
+- Unable to verify: neutral gray.
+- Possible anomaly: warning and human review.
+- Confirmed discrepancy: error only when supported by evidence.
+
+Never label a document fraudulent merely because its source is unavailable, it is expired, or an automated model flags it.
+
+## 4. USERS, ROLES, AND PERMISSIONS
+
+Implement these five roles exactly:
+
+1. `AICTE_ADMIN`
+2. `COLLEGE_MANAGEMENT`
+3. `SCRUTINY_OFFICER`
+4. `VERIFICATION_OFFICER`
+5. `INSPECTION_OFFICER`
+
+New Applicant and Extension of Approval (EoA) are application workflows managed under `COLLEGE_MANAGEMENT`, not separate user roles.
+
+### AICTE_ADMIN
+- View system-wide summaries and authorized institution records.
+- Manage institution records and authorized user provisioning.
+- Assign scrutiny, verification, and inspection officers.
+- Manage permitted workflow settings, validation rule versions, and notification templates.
+- View audit events and operational reports.
+- Review system health and integration status.
+- Manage administrative actions with appropriate confirmation and audit trails.
+- Cannot bypass audit requirements.
+
+### COLLEGE_MANAGEMENT
+- Access only the institution or institutions explicitly assigned to the authenticated user.
+- Manage permitted institution profile fields.
+- Create, save, edit, and submit New Applicant and EoA applications.
+- Upload and replace documents according to workflow rules.
+- View document extraction and validation results.
+- Respond to clarification requests and upload corrected evidence.
+- Track application progress, deadlines, and decisions.
+- Download only documents they are authorized to access.
+- Cannot assign themselves officer or administrator permissions.
+
+### SCRUTINY_OFFICER
+- View applications assigned to them or to their authorized work queue.
+- Review application completeness and document requirements.
+- View extracted metadata and validation evidence.
+- Request clarifications and record comments.
+- Mark checklist items complete, incomplete, or requiring clarification.
+- Submit a scrutiny recommendation and forward the case.
+- Cannot modify original uploaded evidence or make unauthorized final approval decisions.
+
+### VERIFICATION_OFFICER
+- Review assigned documents and verification tasks.
+- Check issuer references, QR codes, signatures, and external sources where real integrations exist.
+- Record the source, time, outcome, and evidence of a verification attempt.
+- Mark verification as verified, discrepancy found, pending, or unable to verify.
+- Request additional evidence when appropriate.
+- Cannot claim that a government source was checked if no integration or actual check occurred.
+
+### INSPECTION_OFFICER
+- View assigned inspections and relevant approved case materials.
+- Review institution infrastructure and supporting evidence.
+- Record inspection schedules, checklists, observations, findings, and recommendations.
+- Upload inspection reports and evidence.
+- Submit reports for the next authorized workflow stage.
+- Cannot independently grant final approval unless explicitly authorized by a separately configured legal workflow.
+
+### Authorization requirements
+- Enforce permissions on the server for every protected operation.
+- Do not rely only on hiding frontend controls.
+- Prevent horizontal and vertical privilege escalation.
+- Enforce institution-level tenant isolation in database queries and service methods.
+- College A must never access College B's restricted applications, files, documents, or API results.
+- Do not trust `institutionId`, `userId`, role, or ownership identifiers supplied by a client without checking them against the authenticated session and authorized assignments.
+- Public registration must never permit choosing `AICTE_ADMIN` or officer roles.
+- Provision privileged accounts through authorized administration or a secure invitation workflow.
+- Protect sessions, login endpoints, password reset, and invitation tokens.
+- Use secure, HTTP-only cookies where compatible, with appropriate SameSite and Secure settings in production.
+- Rate-limit sensitive endpoints.
+- Include a clear logout function.
+- Log role changes, permission changes, document access where appropriate, submissions, decisions, and other sensitive actions.
+
+## 5. AUTHENTICATION AND ONBOARDING
+
+Implement:
+- Login page.
+- Secure account invitation or registration flow.
+- Forgot-password and reset-password flow using a configured provider or securely implemented token process.
+- Session expiry and logout.
+- Role-aware landing pages.
+- Account profile and password/security settings as appropriate.
+- Unauthorized and access-denied pages.
+- Clear validation and error messages.
+
+Provide demo accounts only in an explicitly enabled development/demo mode. Never embed production passwords or secret tokens in source code.
+
+If identity-provider configuration is missing, explain exactly how to configure it. Do not pretend authentication is secure when the app is using a bypass or mock login.
+
+## 6. MAIN APPLICATION NAVIGATION
+
+Build a shared application shell with navigation that changes according to role.
+
+Include appropriate pages for:
+- Overview dashboard.
+- Institutions.
+- Applications.
+- New Applicant.
+- Extension of Approval (EoA).
+- Documents.
+- Scrutiny.
+- Verification.
+- Inspections.
+- Clarifications.
+- Reports.
+- Notifications.
+- Audit logs, restricted to authorized users.
+- User and role management, restricted to administrators.
+- Validation rules and configuration, restricted to authorized administrators.
+- System integrations and health status.
+- Account settings.
+- Help and workflow guidance.
+
+Do not expose pages or records that a user is not authorized to access.
+
+## 7. DASHBOARDS
+
+### AICTE administrator dashboard
+Show database-backed or explicitly demo-labeled metrics:
+- Total institutions.
+- Applications by status.
+- Pending scrutiny.
+- Pending verification.
+- Pending inspections.
+- Clarification requests.
+- Applications approaching deadlines.
+- Recent audit events.
+- Workflow bottlenecks.
+- Integration health.
+
+### College management dashboard
+Show only the user's authorized institutions and cases:
+- Institution profile completion.
+- Draft applications.
+- Submitted applications.
+- Documents needing correction.
+- Clarifications awaiting response.
+- Upcoming deadlines.
+- Application timeline and recent updates.
+
+### Scrutiny dashboard
+Show:
+- Assigned cases.
+- Pending reviews.
+- Cases nearing deadlines.
+- Incomplete checklists.
+- Clarifications pending.
+- Recently completed reviews.
+
+### Verification dashboard
+Show:
+- Assigned verification tasks.
+- Verification outcomes.
+- Sources that could not be reached.
+- Discrepancies requiring human review.
+- Retry-eligible checks.
+- Recent verification evidence.
+
+### Inspection dashboard
+Show:
+- Assigned inspections.
+- Upcoming schedules.
+- Overdue inspections.
+- Pending reports.
+- Institution checklist completion.
+- Findings requiring follow-up.
+
+All dashboards must be filterable where useful. All metrics must come from actual database queries or be clearly marked as demo data.
+
+## 8. INSTITUTION MANAGEMENT
+
+Implement a complete institution management module.
+
+Institution fields should include:
+- Institution ID.
+- Official institution name.
+- Institution type.
+- Address and district/state.
+- Authorized contact details.
+- Official website, where supplied.
+- Established year, where applicable.
+- Applicable affiliation or recognition details.
+- Relevant reference numbers.
+- Institution status.
+- Authorized management users.
+- Created and updated timestamps.
+
+Features:
+- Institution listing.
+- Search and filtering.
+- Sorting and pagination.
+- Institution details.
+- Editable profile forms subject to permissions.
+- Institution profile completeness indicator.
+- Application history.
+- Document history.
+- Authorized user assignments.
+- Change history.
+
+Validate field formats and uniqueness only where the underlying business rule justifies it. Avoid inventing official institution data.
+
+## 9. APPLICATION MANAGEMENT
+
+Implement a lifecycle for:
+- New Applicant.
+- Extension of Approval (EoA).
+
+Application fields should include:
+- Unique application number.
+- Institution ID.
+- Application type.
+- Academic year or applicable period.
+- Submission date.
+- Current workflow status.
+- Assigned officers.
+- Required-document checklist.
+- Scrutiny and verification summaries.
+- Clarifications.
+- Inspection details when applicable.
+- Decision and reasons.
+- Created and updated timestamps.
+
+Support:
+- Create draft.
+- Save progress.
+- Edit draft.
+- Validate required fields.
+- Submit application.
+- Generate an application receipt/reference.
+- View the complete application timeline.
+- Track outstanding requirements.
+- Respond to clarifications.
+- Resubmit corrected information.
+- Withdraw or cancel only where permitted.
+- View decision history.
+
+Implement a validated state machine. Example states:
+- DRAFT
+- SUBMITTED
+- UNDER_SCRUTINY
+- CLARIFICATION_REQUIRED
+- RESUBMITTED
+- UNDER_VERIFICATION
+- INSPECTION_PENDING
+- UNDER_INSPECTION
+- RECOMMENDATION_SUBMITTED
+- APPROVED
+- REJECTED
+- WITHDRAWN
+
+Configure transitions by role and business rules. Do not allow arbitrary status changes through a generic update endpoint. The state names and transitions must be configurable and documented for alignment with the actual applicable AICTE workflow.
+
+Final approval or rejection must require the designated authorized decision-maker, supporting rationale, and an audit entry. Automated rules and AI must never make the final regulatory decision.
+
+## 10. DOCUMENT MANAGEMENT AND SECURE UPLOADS
+
+Support common document formats as required by configuration:
+- PDF.
+- JPEG and PNG.
+- Other permitted formats only when explicitly configured.
+
+For each uploaded document, store:
+- Document ID.
+- Application ID and institution ID.
+- Document category.
+- Original filename.
+- Generated storage key.
+- MIME type detected from content.
+- File size.
+- SHA-256 checksum.
+- Uploading user.
+- Upload timestamp.
+- Version.
+- Applicable validity dates if extracted and confirmed.
+- Extraction status.
+- Validation status.
+- Review status.
+- Storage metadata.
+- Access-control metadata.
+
+Features:
+- Drag-and-drop and file picker.
+- File size and file type validation.
+- Upload progress.
+- Retry and failure feedback.
+- Document preview where safe.
+- Authorized download.
+- Version history.
+- Document replacement subject to permissions.
+- Missing-document checklist.
+- Search and filters.
+- Per-document validation history.
+- Safe handling of corrupted or malformed files.
+
+Security:
+- Generate storage keys on the server.
+- Do not trust user-supplied filenames or MIME types.
+- Reject unsupported file formats and dangerous files.
+- Apply configurable file-size limits.
+- Avoid path traversal and arbitrary file writes.
+- Scan uploads for malware where a scanning service is configured.
+- Never execute uploaded files.
+- Prevent public access to restricted documents.
+- Use short-lived signed URLs or authorized streaming.
+- Do not expose storage credentials.
+- Apply retention and deletion policies only as authorized.
+- Preserve audit history for document replacement and relevant deletion operations.
+
+## 11. OCR AND METADATA EXTRACTION
+
+Implement a document-processing pipeline with explicit processing states:
+- UPLOADED.
+- QUEUED.
+- PROCESSING.
+- EXTRACTED.
+- NEEDS_REVIEW.
+- FAILED.
+
+Extract relevant fields according to the document category, for example:
+- Institution name.
+- Issuer or issuing authority.
+- Certificate/reference number.
+- Issue date.
+- Expiry date.
+- Academic year.
+- Address.
+- Applicable registration or recognition identifier.
+- QR code contents where present.
+- Other configured fields.
+
+Requirements:
+- Store extracted values separately from original files.
+- Preserve page number and bounding-box or text-location information where supported.
+- Record the extraction method and engine version.
+- Store confidence per field where available.
+- Distinguish raw OCR output from normalized values.
+- Allow authorized officers to correct extracted fields.
+- Keep original extracted values and corrections in history.
+- Never silently overwrite original evidence.
+- Identify low-confidence fields for human review.
+- Handle scanned, rotated, low-quality, and multi-page PDFs.
+- Return useful errors for unreadable or encrypted documents.
+
+Create an adapter interface for the Python OCR service. If the service is not configured, display an honest unavailable status and provide instructions to configure it.
+
+## 12. DOCUMENT VALIDATION RULE ENGINE
+
+Build a configurable validation rules engine.
+
+Rule categories:
+- Required document presence.
+- File integrity and readability.
+- Required field presence.
+- Field format validation.
+- Institution-name consistency.
+- Reference-number format and uniqueness where applicable.
+- Issue-date and expiry-date checks.
+- Academic-year consistency.
+- Cross-document consistency.
+- Configured threshold or value checks.
+- Document category requirements.
+- Exact duplicate detection.
+- Near-duplicate review.
+- QR or issuer-reference checks when supported.
+
+Each validation result must contain:
+- Rule ID and rule version.
+- Document ID.
+- Outcome.
+- Human-readable explanation.
+- Evidence or fields used.
+- Timestamp.
+- Rule engine version.
+- Reviewer override, if any.
+- Override reason and audit reference.
+
+Outcomes should include:
+- PASS.
+- FAIL.
+- WARNING.
+- NEEDS_REVIEW.
+- NOT_APPLICABLE.
+- UNABLE_TO_VERIFY.
+
+Allow authorized administrators to manage rules through validated configuration and versioning. Changes must be audited. Historical validation results must retain the rule version used.
+
+Do not present an unimplemented rule as functioning. Provide clear test coverage for important rules.
+
+## 13. EXACT DUPLICATE AND NEAR-DUPLICATE DETECTION
+
+### Exact duplicates
+- Compute SHA-256 server-side from the actual uploaded bytes.
+- Compare hashes against authorized retained documents.
+- Identify exact byte-level duplicates.
+- Show the original document reference, upload dates, and permitted related case information.
+- Enforce institution-level access restrictions when showing matches.
+
+### Near duplicates
+Create an extensible detection interface using suitable methods such as:
+- Perceptual image hashes for image-based similarity.
+- Normalized text similarity for extracted PDF text.
+- Configurable similarity thresholds.
+- Page-level comparison for multi-page documents where feasible.
+
+Store the method, score, threshold, and evidence.
+
+Near-duplicate matches must be flagged for human review, not automatically classified as fraud. Similar official templates may be legitimate. Do not expose unrelated institutions' private documents to users who lack authorization.
+
+## 14. ISSUER, QR CODE, SIGNATURE, AND REFERENCE VERIFICATION
+
+Implement a verification framework with pluggable adapters.
+
+Support:
+- QR code extraction and decoding.
+- URL parsing and safe URL validation.
+- Issuer reference-number checks through configured APIs.
+- Digital signature verification where certificate chains and trust policies are available.
+- Verification status history.
+- Retry handling and timeout handling.
+- Source metadata and timestamp.
+- Evidence capture.
+- Manual verification with recorded reviewer details.
+
+Possible outcomes:
+- VERIFIED.
+- DISCREPANCY_FOUND.
+- PENDING.
+- UNABLE_TO_VERIFY.
+- UNSUPPORTED.
+- ERROR.
+
+Security:
+- Prevent server-side request forgery.
+- Do not fetch arbitrary user-provided URLs without validation and network restrictions.
+- Block unsafe local, private, and link-local network destinations where appropriate.
+- Apply timeouts, response size limits, and safe redirect handling.
+- Never accept a QR code as authentic solely because it contains a URL.
+- Do not claim a digital signature is trusted without validating it against an appropriate trust policy.
+- Do not fabricate issuer APIs or government connections.
+- Use clearly marked sandbox adapters for development.
+- Record the difference between a failed connection and a confirmed discrepancy.
+
+## 15. SCRUTINY WORKFLOW
+
+Create a full scrutiny workspace with:
+- Assigned application queue.
+- Search, filtering, sorting, and pagination.
+- Application overview.
+- Document checklist.
+- Document preview and extracted fields.
+- Validation result panel.
+- Exact and near-duplicate alerts.
+- Cross-document consistency summary.
+- Reviewer comments.
+- Checklist item statuses.
+- Clarification creation.
+- Recommendation and forwarding actions.
+- Complete review history.
+
+A scrutiny officer must be able to:
+1. Open an authorized assigned case.
+2. Review the institution and application.
+3. Inspect each required document.
+4. Review rule results and supporting evidence.
+5. Mark checklist items.
+6. Request specific missing or corrected evidence.
+7. Record comments and recommendation.
+8. Submit the review.
+9. See confirmation and updated case history.
+
+Require a reason for important overrides or adverse recommendations.
+
+## 16. VERIFICATION WORKFLOW
+
+Create a dedicated verification workspace with:
+- Assigned task queue.
+- Document and application references.
+- Extracted issuer and reference fields.
+- QR code results.
+- External source checks.
+- Digital signature results where supported.
+- Verification evidence.
+- Manual verification notes.
+- Retry action where applicable.
+- Outcome selection with rationale.
+- Submission and history.
+
+Every external check must indicate whether it actually ran, which configured source was used, when it ran, and whether it succeeded.
+
+Never confuse:
+- Source unreachable.
+- Source not configured.
+- Unsupported document.
+- Expired document.
+- Confirmed discrepancy.
+- Verified document.
+
+These are different conditions.
+
+## 17. INSPECTION AND INFRASTRUCTURE EVIDENCE
+
+Implement:
+- Inspection assignment.
+- Inspection scheduling.
+- Inspection details.
+- Configurable checklists.
+- Infrastructure categories and evidence requirements.
+- Evidence uploads.
+- Observations and findings.
+- Corrective-action requests.
+- Inspection report drafting.
+- Report submission.
+- Officer recommendation.
+- Inspection history.
+
+Support configurable categories such as:
+- Classrooms.
+- Laboratories.
+- Library.
+- Computing facilities.
+- Faculty evidence.
+- Safety and accessibility evidence.
+- Other categories defined by authorized administrators.
+
+Do not hardcode regulatory thresholds unless the official requirement has been provided and verified. Make checklist requirements configurable and versioned.
+
+Allow the officer to mark a checklist item as compliant, non-compliant, not applicable, or unable to assess, with evidence and comments.
+
+## 18. CLARIFICATION AND RESUBMISSION
+
+Implement a complete clarification system.
+
+Fields:
+- Clarification ID.
+- Application ID.
+- Issuing officer.
+- Requested evidence or correction.
+- Detailed reason.
+- Issue timestamp.
+- Due date.
+- Response timestamp.
+- Response text.
+- Uploaded response documents.
+- Status.
+- Resolution notes.
+
+Features:
+- Officers create clarification requests with specific reasons.
+- College management sees outstanding requests.
+- College management submits responses and replacement documents.
+- Officers review responses.
+- Unresolved clarifications can be returned with additional explanation.
+- All versions and actions remain in the history.
+- Deadline reminders are generated when notifications are configured.
+
+Only authorized users may view or respond to a clarification.
+
+## 19. NOTIFICATIONS AND DEADLINES
+
+Create an in-app notification system for:
+- Application submitted.
+- Application assigned.
+- Scrutiny started or completed.
+- Verification status updated.
+- Clarification requested.
+- Clarification response received.
+- Inspection scheduled.
+- Inspection report submitted.
+- Application decision recorded.
+- Upcoming and overdue deadlines.
+
+Features:
+- Unread count.
+- Mark read and mark all read.
+- Link to the relevant authorized resource.
+- Notification history.
+- Configurable notification templates.
+- Optional email adapter through a configured provider.
+- Delivery status and failure handling.
+
+Do not claim an email was sent unless the configured provider confirms the attempt. Never expose other institutions' information in notification content.
+
+## 20. REPORTING AND EXPORTS
+
+Provide authorized reports for:
+- Application volumes and status.
+- Processing time.
+- Pending scrutiny.
+- Verification outcomes.
+- Clarification aging.
+- Inspection outcomes.
+- Document completeness.
+- Validation-rule failures.
+- Possible duplicates.
+- Deadline compliance.
+- Officer workload.
+- Audit events.
+
+Features:
+- Date range filters.
+- Institution filters subject to access rights.
+- Status filters.
+- Charts and summary tables.
+- CSV export.
+- PDF export if implemented using an appropriate server-side library.
+- Report generation timestamp.
+- Export permission checks.
+- Safe handling of spreadsheet-formula injection in CSV files.
+
+Clearly identify demo data. Reports must derive from authorized database records and must not leak restricted information.
+
+## 21. AUDIT TRAIL
+
+Create an append-oriented audit trail for security-sensitive events.
+
+Record:
+- Actor ID.
+- Actor role at the time.
+- Action.
+- Entity type and ID.
+- Institution context where applicable.
+- Timestamp.
+- Request or correlation ID.
+- Outcome.
+- Relevant before/after metadata when appropriate.
+- Reason for important changes.
+- Safe metadata that does not unnecessarily duplicate sensitive document contents.
+
+Audit:
+- Authentication and access-sensitive events.
+- User invitations and role changes.
+- Institution changes.
+- Application submissions and transitions.
+- Document uploads, replacements, and relevant downloads.
+- Validation overrides.
+- Verification attempts.
+- Clarifications.
+- Inspection findings and submissions.
+- Final decisions.
+- Administrative rule changes.
+
+Do not log passwords, access tokens, API keys, or full document contents. Prevent ordinary users from modifying or deleting audit entries. Restrict audit browsing and exports to authorized administrators.
+
+## 22. DATABASE SCHEMA
+
+Design normalized relational tables with appropriate foreign keys, indexes, constraints, and timestamps.
+
+Include at minimum:
+- users.
+- roles or role assignments.
+- institutions.
+- institution_user_memberships.
+- applications.
+- application_status_history.
+- application_assignments.
+- application_checklist_items.
+- documents.
+- document_versions.
+- document_extractions.
+- extracted_fields.
+- validation_rules.
+- validation_rule_versions.
+- validation_runs.
+- validation_results.
+- duplicate_matches.
+- verification_tasks.
+- verification_attempts.
+- verification_evidence.
+- inspections.
+- inspection_checklist_items.
+- inspection_findings.
+- inspection_reports.
+- clarifications.
+- clarification_responses.
+- notifications.
+- audit_logs.
+- integration_configurations or non-secret integration metadata.
+
+Add any necessary supporting tables.
+
+Requirements:
+- Use appropriate UUID or stable identifiers.
+- Enforce unique constraints where appropriate.
+- Add indexes for common filters, foreign keys, hashes, statuses, timestamps, and assignments.
+- Use transactions for important multi-step state transitions.
+- Handle concurrent updates safely.
+- Use database migrations.
+- Avoid storing uploaded document bytes directly in ordinary relational rows unless explicitly justified.
+- Store secrets outside the database where appropriate.
+- Define data retention and soft-delete behavior where required.
+- Never use a client-supplied institution ID as proof of authorization.
+
+## 23. API DESIGN
+
+Implement consistent REST endpoints under `/api/v1`.
+
+Provide endpoint groups for:
+- Authentication and sessions.
+- Users and authorized invitations.
+- Institutions.
+- Applications.
+- Application workflow transitions.
+- Assignments.
+- Documents and versions.
+- Document processing.
+- Validation rules and validation runs.
+- Duplicate detection.
+- Verification tasks and attempts.
+- Inspections and reports.
+- Clarifications and responses.
+- Notifications.
+- Reports and exports.
+- Audit events.
+- System health and integration status.
+
+For each endpoint:
+- Validate inputs.
+- Authenticate where required.
+- Check authorization and institution scope.
+- Return appropriate HTTP status codes.
+- Use consistent JSON response and error formats.
+- Avoid exposing stack traces or secrets.
+- Support pagination and filtering for list endpoints.
+- Apply rate limits where appropriate.
+- Add tests for permission boundaries.
+
+Do not implement a single unrestricted endpoint that updates arbitrary application fields or workflow status.
+
+## 24. SECURITY AND PRIVACY
+
+Implement security from the start.
+
+- Server-side authentication and authorization.
+- Institution-level tenant isolation.
+- Input validation and output encoding.
+- Secure session handling.
+- CSRF protection where applicable.
+- XSS prevention.
+- SQL injection prevention through parameterized queries or ORM.
+- SSRF prevention for external verification.
+- Upload validation and safe storage.
+- Rate limiting.
+- Secure HTTP headers.
+- Secret management.
+- Safe error messages.
+- Least-privilege service credentials.
+- No production secrets in source control.
+- No sensitive records in public static assets.
+- Data minimization.
+- Configurable retention and deletion procedures.
+- Access-controlled exports.
+- Audit logging.
+- Secure default configurations.
+- Dependency and configuration review instructions.
+
+Do not claim compliance with any law, regulation, or security certification without a proper assessment.
+
+Use synthetic data during development. Do not populate the system with fabricated real institutions or actual sensitive student or staff records.
+
+## 25. SYSTEM ADMINISTRATION AND INTEGRATIONS
+
+Create an authorized administration area showing:
+- Database connection status.
+- OCR service status.
+- Document storage status.
+- Gemini integration status.
+- External verification adapters.
+- Email provider status.
+- Last successful check.
+- Useful error summaries without secrets.
+
+Implement health endpoints such as:
+- `/api/v1/health`
+- `/api/v1/health/ready`
+
+The readiness endpoint should check required dependencies without exposing credentials or internal infrastructure details.
+
+Provide configuration instructions for:
+- Database.
+- Object storage.
+- Authentication.
+- Gemini API.
+- OCR service.
+- Email.
+- External verification adapters.
+
+Keep all credentials in server-side environment variables or a supported secrets manager.
+
+## 26. USER EXPERIENCE AND ERROR HANDLING
+
+Every page must include appropriate:
+- Loading state.
+- Empty state.
+- Error state.
+- Success feedback.
+- Field-level validation.
+- Permission-denied state.
+- Retry action where safe.
+- Confirmation for destructive or irreversible actions.
+
+Forms must preserve appropriate draft state during recoverable errors. Do not lose uploaded document references when a later validation fails.
+
+Use optimistic UI updates only when safe and reconcile them with the server response.
+
+Do not display fake progress that never finishes. Do not use buttons that do nothing. If a feature is unavailable, disable it with a useful explanation or provide an actual configuration path.
+
+## 27. SAMPLE DATA AND DEMO MODE
+
+Provide a development seed script with clearly fictional sample records:
+- Several fictional institutions.
+- Users for each role.
+- Applications at different workflow stages.
+- Sample document metadata.
+- Sample validation results.
+- Clarifications.
+- Inspections.
+- Notifications.
+- Audit entries.
+
+Use obviously fictional institution names and synthetic document contents.
+
+Demo mode must be explicitly enabled through configuration. Do not silently activate demo authentication or demo data in production.
+
+Demonstrate tenant isolation using at least two fictional colleges and verify that a user from one cannot access the other institution's records.
+
+## 28. TESTING REQUIREMENTS
+
+Create automated tests for:
+
+### Authentication and authorization
+- Unauthenticated requests are rejected.
+- College users cannot access another college's application.
+- College users cannot download another college's documents.
+- College users cannot change their role.
+- Officers cannot access unassigned cases unless their permissions explicitly allow it.
+- Privileged routes reject unauthorized users.
+- Session expiry and logout behave correctly.
+
+### Application workflow
+- Draft creation.
+- Submission validation.
+- Allowed status transitions.
+- Rejection of invalid transitions.
+- Clarification and resubmission.
+- Decision authorization.
+- Audit entries for important transitions.
+
+### Document processing
+- File-size and file-type validation.
+- SHA-256 calculation.
+- Exact duplicate detection.
+- Extraction errors.
+- Expiry-date rule.
+- Missing-field rule.
+- Inconclusive external verification.
+- Human override history.
+
+### Inspections and reports
+- Assignment checks.
+- Checklist updates.
+- Finding submission.
+- Report access control.
+- CSV export permission and formula-injection safety.
+
+### Quality
+- Frontend component tests.
+- API tests.
+- Database integration tests where a test database is configured.
+- Linting and type checking.
+- Build verification.
+- Python service tests where applicable.
+
+Never state that tests passed unless they were actually executed and passed. Clearly report tests that could not be run.
+
+## 29. REQUIRED PROJECT STRUCTURE
+
+Organize the code into logical modules rather than a giant component or file.
+
+Use an appropriate structure similar to:
+
+- `src/`
+  - `app/`
+  - `components/`
+  - `layouts/`
+  - `features/auth/`
+  - `features/dashboard/`
+  - `features/institutions/`
+  - `features/applications/`
+  - `features/documents/`
+  - `features/scrutiny/`
+  - `features/verification/`
+  - `features/inspections/`
+  - `features/clarifications/`
+  - `features/notifications/`
+  - `features/reports/`
+  - `features/admin/`
+  - `services/`
+  - `hooks/`
+  - `types/`
+  - `utils/`
+- `server/`
+  - `routes/`
+  - `middleware/`
+  - `controllers/`
+  - `services/`
+  - `repositories/`
+  - `validators/`
+  - `integrations/`
+  - `security/`
+- `prisma/` or the selected ORM's schema and migration directory.
+- `python-service/` for optional OCR processing.
+- `tests/`
+- `docs/`
+- `scripts/`
+- `.env.example`
+- `README.md`
+- `Dockerfile` and `docker-compose.yml` where compatible.
+
+Adapt the exact folder names to the builder's conventions without losing the architectural separation.
+
+## 30. DOCUMENTATION
+
+Create a complete README with:
+- Project purpose.
+- Features and role descriptions.
+- Architecture diagram using Mermaid.
+- Application workflow diagram using Mermaid.
+- Role-permission matrix.
+- Database schema overview.
+- API endpoint overview.
+- Prerequisites.
+- Environment variables.
+- Local installation.
+- Database setup and migrations.
+- Seed data setup.
+- Development commands.
+- Testing commands.
+- Build commands.
+- Docker instructions.
+- Python OCR service setup.
+- Storage configuration.
+- Authentication configuration.
+- External verification integration guide.
+- Troubleshooting.
+- Security notes.
+- Deployment instructions.
+- Known limitations and unfinished integrations.
+
+Also create:
+- `docs/architecture.md`
+- `docs/security.md`
+- `docs/workflows.md`
+- `docs/api.md`
+- `docs/database.md`
+- `docs/integrations.md`
+- `docs/testing.md`
+
+Documentation must describe the implementation that actually exists, not an imagined implementation.
+
+## 31. IMPLEMENTATION STRATEGY
+
+Implement the complete system in the current project. Maintain a requirements checklist so no major module is forgotten.
+
+Recommended order:
+1. Project setup, theme, routing, and shared layout.
+2. Database schema, migrations, and seed scripts.
+3. Authentication and server-side authorization.
+4. Institution management and tenant isolation.
+5. Application lifecycle and assignments.
+6. Secure document uploads and private storage.
+7. OCR integration and metadata extraction.
+8. Validation rules and exact duplicate detection.
+9. Near-duplicate detection interface.
+10. Verification adapters and evidence.
+11. Scrutiny workspace.
+12. Inspection workflows.
+13. Clarification and resubmission.
+14. Notifications and deadlines.
+15. Reports, exports, and audit trail.
+16. Administration, configuration, and health checks.
+17. Automated tests, security review, documentation, and final build.
+
+This is an implementation order, not permission to omit later modules. Continue until all feasible requirements are implemented. If context or execution limits prevent completion in one pass, preserve the existing code and a detailed completion checklist, then continue implementation in the same project rather than replacing it with a smaller demo.
+
+## 32. ACCEPTANCE CRITERIA
+
+The application is not complete merely because the home page renders.
+
+Verify as many of the following as the environment permits:
+
+1. The app builds and launches.
+2. Navigation and forms work.
+3. Authentication is real or clearly identified as a development-only limitation.
+4. The five roles have separate, enforced permissions.
+5. College A cannot read or modify College B's restricted data.
+6. Applications can be created, saved, submitted, and tracked.
+7. Documents can be uploaded and securely associated with applications.
+8. Document metadata and validation results are persisted.
+9. Exact duplicate detection uses real SHA-256 file hashes.
+10. External verification clearly distinguishes successful checks from unavailable sources.
+11. Scrutiny, verification, inspection, and clarification workflows are functional.
+12. Important state changes are audited.
+13. Reports and exports enforce access permissions.
+14. Database migrations and setup instructions are provided.
+15. Error states and validation messages work.
+16. Automated tests cover core workflows and security boundaries.
+17. Production secrets are not committed or exposed.
+18. The README accurately describes how to run the application.
+19. Unimplemented external services are explicitly documented.
+20. No unsupported automated fraud verdict or automatic final regulatory decision is made.
+
+## 33. FINAL INSTRUCTIONS
+
+Begin building the actual application now.
+
+Do not respond with only an architecture proposal, checklist, or sample dashboard. Create the project files, install appropriate dependencies through the supported environment, implement the features, and run available checks.
+
+Preserve a single coherent architecture. Reuse components and services. Do not replace real persistence with in-memory mock arrays. Do not use local storage as a substitute for secure server-side authorization or persistent production data.
+
+Where a real external service cannot be configured automatically, build a safe adapter and provide exact configuration instructions. Never invent API credentials, official records, verification results, or successful tests.
+
+Before declaring the work complete:
+- Run the available build, type-check, lint, and tests.
+- Fix issues found.
+- Verify the main user flows.
+- Review authorization and institution-level data isolation.
+- Identify which integrations were actually tested.
+- Produce an honest implementation status report listing complete features, incomplete features, external setup requirements, and exact next steps.
+
+The goal is a complete, professional, maintainable starting implementation of EduVerify-AI, not merely an attractive visual mockup.
